@@ -1,7 +1,7 @@
 # Bulk Delete Gravity Forms Entries
 # Gravity Forms WPProAtoZ Bulk Delete
 
-![Plugin Version](https://img.shields.io/badge/version-1.1-blue.svg) ![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-blue.svg) ![PHP](https://img.shields.io/badge/PHP-8.0%2B-blue.svg) ![License](https://img.shields.io/badge/license-GPLv2-green.svg)
+![Plugin Version](https://img.shields.io/badge/version-1.2-blue.svg) ![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-blue.svg) ![PHP](https://img.shields.io/badge/PHP-8.0%2B-blue.svg) ![License](https://img.shields.io/badge/license-GPLv2-green.svg)
 
 A powerful WordPress plugin to bulk delete entries from individual Gravity Forms, perfect for cleaning up spam or unwanted submissions.
 
@@ -20,8 +20,12 @@ Developed by [WPProAtoZ](https://wpproatoz.com), this plugin integrates seamless
 - **Targeted Deletion**: Delete entries from a single, selected Gravity Form without affecting others.
 - **Status Selection**: Choose to delete Active, Spam, Trash entries, or any combination.
 - **Customizable Processing**: Adjust batch size and pause time to suit your server’s capacity.
-- **Real-Time Monitoring**: Track progress with a visual progress bar and detailed status updates via AJAX.
-- **Stop Control**: Halt the deletion process mid-run with a single click.
+- **Real-Time Monitoring**: Track progress with a visual progress bar, loading spinner, and detailed status updates via AJAX.
+- **Stop Control**: Halt the deletion process mid-run with a confirmation prompt.
+- **Dry Run Mode**: Simulate deletions without removing entries for safe testing.
+- **Logging**: Record deletion activities in a log file for auditing.
+- **Entry Count Preview**: See the total entries to be deleted before starting.
+- **Reset Settings**: Revert to default settings with one click.
 - **Dependency**: Requires the Gravity Forms plugin.
 
 ---
