@@ -1,4 +1,4 @@
-# wpproatoz-bulkdelete-gf-entries
+# Bulk Delete Gravity Forms Entries
 # Gravity Forms WPProAtoZ Bulk Delete
 
 ![Plugin Version](https://img.shields.io/badge/version-1.1-blue.svg) ![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-blue.svg) ![PHP](https://img.shields.io/badge/PHP-8.0%2B-blue.svg) ![License](https://img.shields.io/badge/license-GPLv2-green.svg)
