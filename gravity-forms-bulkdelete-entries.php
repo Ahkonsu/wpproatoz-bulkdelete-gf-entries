@@ -3,7 +3,7 @@
 Plugin Name: Gravity Forms WPProAtoZ Bulk Delete for Individual Gravity Forms
 Plugin URI: https://wpproatoz.com
 Description: This plugin helps you remove bulk entries for Gravity Forms, a great way to deal with spam.
-Version: 1.2
+Version: 1.2.1
 Requires at least: 6.0
 Requires PHP: 8.0
 Author: WPProAtoZ.com

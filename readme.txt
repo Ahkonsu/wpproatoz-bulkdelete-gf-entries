@@ -4,7 +4,7 @@ Tags: gravity forms, bulk delete, spam cleanup, form entries, wordpress plugin
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 8.0
-Stable tag: 1.2
+Stable tag: 1.2.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Requires Plugins: gravityforms
@@ -62,6 +62,8 @@ The plugin processes entries in batches with a configurable pause time between b
 2. The bulk delete process in action with progress bar and stop button.
 
 == Changelog ==
+= 1.2.1 =
+Minor bug fix
 
 = 1.2 =
 * Added logging functionality to track deletion activities.
