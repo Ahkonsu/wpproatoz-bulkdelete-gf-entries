@@ -1,0 +1,1 @@
+# wpproatoz-bulkdelete-gf-entries
