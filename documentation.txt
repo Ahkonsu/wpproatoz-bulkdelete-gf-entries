@@ -1,0 +1,78 @@
+Gravity Forms WPProAtoZ Bulk Delete Plugin - User Documentation
+=============================================================
+
+Version: 1.1
+Date: April 01, 2025
+Author: WPProAtoZ.com
+Website: https://wpproatoz.com
+GitHub: https://github.com/Ahkonsu/wpproatoz-bulkdelete-gf-entries
+
+Overview
+--------
+This plugin allows WordPress administrators to bulk delete entries from a specific Gravity Forms form. It’s designed to handle large volumes of entries (e.g., spam cleanup) with customizable settings, real-time progress tracking, and the ability to stop the process mid-run.
+
+Requirements
+------------
+- WordPress 6.0 or higher
+- PHP 8.0 or higher
+- Gravity Forms plugin (active)
+
+Installation
+------------
+1. Download the plugin zip file from WPProAtoZ.com or GitHub.
+2. In your WordPress admin, go to Plugins > Add New > Upload Plugin.
+3. Upload the zip file and click "Install Now."
+4. Activate the plugin.
+5. Ensure Gravity Forms is installed and active.
+
+How to Use
+----------
+1. **Access the Tool**
+   - Log in to your WordPress admin dashboard as an administrator.
+   - Navigate to **Settings > GF Bulk Delete**.
+
+2. **Configure Settings**
+   - **Select Form**: Choose the Gravity Form you want to delete entries from using the dropdown menu. The form title and ID are displayed for clarity.
+   - **Batch Size**: Set the number of entries to delete per batch (default: 1000). Lower this for slower servers to avoid timeouts.
+   - **Pause Time (seconds)**: Define the pause between batches in seconds (default: 1). Increase this if your server struggles with load.
+   - **Entry Status to Delete**: Check the boxes for Active, Spam, and/or Trash entries to include them in the deletion. At least one must be selected.
+   - Click **Save Settings** to store your preferences.
+
+3. **Run the Bulk Delete**
+   - Below the settings form, click **Run Bulk Delete Now**.
+   - A confirmation prompt will appear: "Are you sure you want to delete entries? This cannot be undone." Click OK to proceed.
+   - The process starts, showing "Starting bulk delete..." followed by real-time updates like "Deleted: 1000 / 5000 (20%) - Remaining: 4000".
+   - A green progress bar fills as entries are deleted.
+
+4. **Monitor Progress**
+   - Watch the progress text and bar to see how many entries have been deleted, the total count, percentage complete, and entries remaining.
+   - The process runs in batches, pausing between each based on your settings.
+
+5. **Stop the Process (Optional)**
+   - Once started, a **Stop Bulk Delete** button appears.
+   - Click it to halt the process after the current batch finishes. You’ll see "Stopping after current batch..." followed by "Stopped by user" when it ends.
+
+6. **Completion**
+   - When finished, you’ll see "Bulk delete completed!" and the UI resets, allowing you to start again if needed.
+
+Troubleshooting
+---------------
+- **Nothing Happens on Start**: Check your browser console (F12 > Console) for errors. Ensure Gravity Forms is active and settings are saved.
+- **Slow Performance**: Reduce the batch size or increase the pause time in settings.
+- **Errors**: Common messages include:
+  - "Gravity Forms not active": Install/activate Gravity Forms.
+  - "No form selected": Choose a form in the settings.
+  - "AJAX Error": Check server logs or contact your host if network issues persist.
+
+Support
+-------
+- Visit https://wpproatoz.com for help.
+- Report bugs or request features at https://github.com/Ahkonsu/wpproatoz-bulkdelete-gf-entries.
+
+Notes
+-----
+- Always back up your database before running bulk deletes.
+- This plugin only affects the selected form’s entries, leaving other forms untouched.
+- Deletion is permanent—there’s no undo option.
+
+Thank you for using Gravity Forms WPProAtoZ Bulk Delete!
