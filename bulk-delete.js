@@ -1,8 +1,11 @@
 document.addEventListener('DOMContentLoaded', function() {
     const startButton = document.getElementById('start-bulk-delete');
     const stopButton = document.getElementById('stop-bulk-delete');
+    const resetButton = document.getElementById('reset-settings');
     const progressText = document.getElementById('progress-text');
     const progressBarFill = document.getElementById('progress-bar-fill');
+    const loader = document.getElementById('loader');
+    const formSelect = document.querySelector('select[name="wpproatoz_gf_bulk_delete_options[form_id]"]');
     let isRunning = false;
 
     if (!startButton) {
@@ -12,12 +15,22 @@ document.addEventListener('DOMContentLoaded', function() {
 
     startButton.addEventListener('click', function(e) {
         e.preventDefault();
-        if (!confirm('Are you sure you want to delete entries? This cannot be undone.')) return;
         if (isRunning) return;
+
+        if (!wpproatoz_gf_ajax.form_id) {
+            alert('Please select a form in the settings before proceeding.');
+            return;
+        }
+
+        const actionText = wpproatoz_gf_ajax.dry_run ? 'simulate deletion for' : 'delete entries from';
+        const confirmation = confirm(`Are you sure you want to ${actionText} "${wpproatoz_gf_ajax.form_title}"? This cannot be undone${wpproatoz_gf_ajax.dry_run ? ' (Dry Run mode is enabled).' : '.'}`);
+        if (!confirmation) return;
+
         isRunning = true;
         startButton.disabled = true;
         stopButton.style.display = 'inline-block';
         progressText.textContent = 'Starting bulk delete...';
+        loader.style.display = 'inline-block';
         progressBarFill.style.width = '0%';
         deleteOptionViaAjax('wpproatoz_gf_bulk_delete_stop');
         runBulkDelete(0);
@@ -26,9 +39,54 @@ document.addEventListener('DOMContentLoaded', function() {
     stopButton.addEventListener('click', function(e) {
         e.preventDefault();
         if (!isRunning) return;
+        if (!confirm('Are you sure you want to stop the bulk delete process?')) return;
         updateOptionViaAjax('wpproatoz_gf_bulk_delete_stop', '1');
         progressText.textContent = 'Stopping after current batch...';
         stopButton.disabled = true;
+    });
+
+    resetButton.addEventListener('click', function(e) {
+        e.preventDefault();
+        if (!confirm('Are you sure you want to reset all settings to defaults?')) return;
+        fetch(wpproatoz_gf_ajax.ajax_url, {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({
+                action: 'wpproatoz_gf_reset_settings',
+                nonce: wpproatoz_gf_ajax.nonce
+            }).toString()
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload(); // Refresh page to reflect defaults
+            }
+        });
+    });
+
+    formSelect.addEventListener('change', function() {
+        const formId = this.value;
+        if (!formId) {
+            document.getElementById('entry-count-preview').textContent = '';
+            return;
+        }
+        fetch(wpproatoz_gf_ajax.ajax_url, {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({
+                action: 'wpproatoz_gf_get_entry_count',
+                nonce: wpproatoz_gf_ajax.nonce,
+                form_id: formId
+            }).toString()
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('entry-count-preview').textContent = `Total Entries to Delete: ${data.data.count}`;
+            }
+        });
     });
 
     function runBulkDelete(offset) {
@@ -51,25 +109,31 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(data => {
             console.log('AJAX Response:', data);
             if (data.success) {
-                progressText.textContent = `Deleted: ${data.data.total_deleted} / ${data.data.total_entries} (${data.data.percentage}%) - Remaining: ${data.data.remaining}`;
+                const actionText = data.data.dry_run ? 'Would Delete' : 'Deleted';
+                progressText.textContent = `${actionText}: ${data.data.total_deleted} / ${data.data.total_entries} (${data.data.percentage}%) - Remaining: ${data.data.remaining}`;
                 progressBarFill.style.width = `${data.data.percentage}%`;
+                loader.style.display = 'inline-block';
                 if (data.data.is_stopped) {
                     progressText.textContent += ' - Stopped by user.';
+                    loader.style.display = 'none';
                     resetUI();
                 } else if (data.data.has_more) {
                     setTimeout(() => runBulkDelete(data.data.offset), wpproatoz_gf_ajax.pause_time);
                 } else {
-                    progressText.textContent += ' - Bulk delete completed!';
+                    progressText.textContent += ' - Bulk ' + (data.data.dry_run ? 'simulation' : 'delete') + ' completed!';
+                    loader.style.display = 'none';
                     resetUI();
                 }
             } else {
                 progressText.textContent = 'Error: ' + data.data.message;
+                loader.style.display = 'none';
                 resetUI();
             }
         })
         .catch(error => {
             console.error('AJAX Error:', error);
             progressText.textContent = 'AJAX Error: ' + error.message;
+            loader.style.display = 'none';
             resetUI();
         });
     }
