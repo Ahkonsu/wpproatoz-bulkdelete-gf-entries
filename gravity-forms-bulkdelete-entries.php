@@ -14,9 +14,27 @@ GitHub Plugin URI: https://github.com/Ahkonsu/wpproatoz-bulkdelete-gf-entries/re
 GitHub Branch: main
 Requires Plugins: gravityforms
 */
+// Exit if accessed directly
+if (!defined('ABSPATH')) {
+    exit;
+}
 
+// Plugin updater
+require 'plugin-update-checker/plugin-update-checker.php';
+use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
+
+$myUpdateChecker = PucFactory::buildUpdateChecker(
+    'https://github.com/Ahkonsu/wpproatoz-bulkdelete-gf-entries/',
+    __FILE__,
+    'wpproatoz-gf-extras'
+);
+
+$myUpdateChecker->setBranch('main');
 // Add admin menu under Settings
-add_action('admin_menu', 'wpproatoz_gf_bulk_delete_menu');
+add_action('admin_menu', 'wpproatoz-bulkdelete-gf-entries');
+//end plugin update check
+
+
 function wpproatoz_gf_bulk_delete_menu() {
     add_options_page(
         'GF Bulk Delete',
