@@ -26,7 +26,7 @@ use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
 $myUpdateChecker = PucFactory::buildUpdateChecker(
     'https://github.com/Ahkonsu/wpproatoz-bulkdelete-gf-entries/',
     __FILE__,
-    'wpproatoz-gf-extras'
+    'wpproatoz-bulkdelete-gf-entries'
 );
 
 $myUpdateChecker->setBranch('main');
