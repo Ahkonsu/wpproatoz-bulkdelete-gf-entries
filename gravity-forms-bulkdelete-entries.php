@@ -14,22 +14,7 @@ GitHub Plugin URI: https://github.com/Ahkonsu/wpproatoz-bulkdelete-gf-entries/re
 GitHub Branch: main
 Requires Plugins: gravityforms
 */
-// Exit if accessed directly
-if (!defined('ABSPATH')) {
-    exit;
-}
 
-// Plugin updater
-require 'plugin-update-checker/plugin-update-checker.php';
-use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
-
-$myUpdateChecker = PucFactory::buildUpdateChecker(
-    'https://github.com/Ahkonsu/wpproatoz-bulkdelete-gf-entries',
-    __FILE__,
-    'wpproatoz-bulkdelete-gf-entries'
-);
-
-//end plugin update checker
 // Add admin menu under Settings
 add_action('admin_menu', 'wpproatoz_gf_bulk_delete_menu');
 function wpproatoz_gf_bulk_delete_menu() {
@@ -128,8 +113,8 @@ function wpproatoz_gf_bulk_delete_enqueue_scripts($hook) {
         'nonce' => wp_create_nonce('wpproatoz_gf_bulk_delete_nonce'),
         'pause_time' => isset(get_option('wpproatoz_gf_bulk_delete_options')['pause_time']) ? floatval(get_option('wpproatoz_gf_bulk_delete_options')['pause_time']) * 1000 : 15000,
         'form_id' => isset(get_option('wpproatoz_gf_bulk_delete_options')['form_id']) ? absint(get_option('wpproatoz_gf_bulk_delete_options')['form_id']) : 0,
-        'form_title' => ($form_id = absint(get_option('wpproatoz_gf_bulk_delete_options')['form_id'])) ? GFAPI::get_form($form_id)['title'] : '',
-        'dry_run' => isset(get_option('wpproatoz_gf_bulk_delete_options')['dry_run']) ? (int) get_option('wpproatoz_gf_bulk_delete_options')['dry_run'] : 0
+        'form_title' => ($form_id = absint(get_option('wpproatoz_gf_bulk_delete_options')['form_id'])) ? GFAPI::get_form($form_id)['title'] : ''
+        // Removed 'dry_run' from here to fetch dynamically via AJAX
     ));
     wp_enqueue_style('wpproatoz-gf-bulk-delete-css', plugin_dir_url(__FILE__) . 'bulk-delete.css', array(), '1.2');
 }
@@ -316,6 +301,21 @@ function wpproatoz_gf_get_entry_count() {
 
     $count = GFAPI::count_entries($form_id, $search_criteria);
     wp_send_json_success(array('count' => $count));
+}
+
+// AJAX handler for fetching current settings (new)
+add_action('wp_ajax_wpproatoz_gf_get_settings', 'wpproatoz_gf_get_settings');
+function wpproatoz_gf_get_settings() {
+    check_ajax_referer('wpproatoz_gf_bulk_delete_nonce', 'nonce');
+    $options = get_option('wpproatoz_gf_bulk_delete_options');
+    $dry_run = isset($options['dry_run']) ? (int) $options['dry_run'] : 0;
+    $form_id = isset($options['form_id']) ? absint($options['form_id']) : 0;
+    $form_title = $form_id ? GFAPI::get_form($form_id)['title'] : '';
+    wp_send_json_success(array(
+        'dry_run' => $dry_run,
+        'form_id' => $form_id,
+        'form_title' => $form_title
+    ));
 }
 
 // AJAX handler for updating options

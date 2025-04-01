@@ -17,23 +17,49 @@ document.addEventListener('DOMContentLoaded', function() {
         e.preventDefault();
         if (isRunning) return;
 
-        if (!wpproatoz_gf_ajax.form_id) {
-            alert('Please select a form in the settings before proceeding.');
-            return;
-        }
+        // Fetch current settings before showing confirmation
+        fetch(wpproatoz_gf_ajax.ajax_url, {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({
+                action: 'wpproatoz_gf_get_settings',
+                nonce: wpproatoz_gf_ajax.nonce
+            }).toString()
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const formId = data.data.form_id;
+                const formTitle = data.data.form_title;
+                const dryRun = data.data.dry_run;
 
-        const actionText = wpproatoz_gf_ajax.dry_run ? 'simulate deletion for' : 'delete entries from';
-        const confirmation = confirm(`Are you sure you want to ${actionText} "${wpproatoz_gf_ajax.form_title}"? This cannot be undone${wpproatoz_gf_ajax.dry_run ? ' (Dry Run mode is enabled).' : '.'}`);
-        if (!confirmation) return;
+                if (!formId) {
+                    alert('Please select a form in the settings before proceeding.');
+                    return;
+                }
 
-        isRunning = true;
-        startButton.disabled = true;
-        stopButton.style.display = 'inline-block';
-        progressText.textContent = 'Starting bulk delete...';
-        loader.style.display = 'inline-block';
-        progressBarFill.style.width = '0%';
-        deleteOptionViaAjax('wpproatoz_gf_bulk_delete_stop');
-        runBulkDelete(0);
+                const actionText = dryRun ? 'simulate deletion for' : 'delete entries from';
+                const dryRunNotice = dryRun ? ' (Dry Run mode is enabled)' : '';
+                const confirmation = confirm(`Are you sure you want to ${actionText} "${formTitle}"? This cannot be undone${dryRunNotice}.`);
+                if (!confirmation) return;
+
+                isRunning = true;
+                startButton.disabled = true;
+                stopButton.style.display = 'inline-block';
+                progressText.textContent = 'Starting bulk delete...';
+                loader.style.display = 'inline-block';
+                progressBarFill.style.width = '0%';
+                deleteOptionViaAjax('wpproatoz_gf_bulk_delete_stop');
+                runBulkDelete(0);
+            } else {
+                alert('Error fetching settings: ' + data.data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching settings:', error);
+            alert('Error fetching settings. Please try again.');
+        });
     });
 
     stopButton.addEventListener('click', function(e) {
