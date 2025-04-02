@@ -3,7 +3,7 @@
 Plugin Name: Gravity Forms WPProAtoZ Bulk Delete for Individual Gravity Forms
 Plugin URI: https://wpproatoz.com
 Description: This plugin helps you remove bulk entries for Gravity Forms, a great way to deal with spam.
-Version: 1.2.1
+Version: 1.3
 Requires at least: 6.0
 Requires PHP: 8.0
 Author: WPProAtoZ.com
@@ -24,19 +24,13 @@ require 'plugin-update-checker/plugin-update-checker.php';
 use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
 
 $myUpdateChecker = PucFactory::buildUpdateChecker(
-	'https://github.com/Ahkonsu/wpproatoz-bulkdelete-gf-entries/',
-	__FILE__,
-	'wpproatoz-bulkdelete-gf-entries'
+    'https://github.com/Ahkonsu/wpproatoz-bulkdelete-gf-entries/',
+    __FILE__,
+    'wpproatoz-bulkdelete-gf-entries'
 );
 
 //Set the branch that contains the stable release.
 $myUpdateChecker->setBranch('main');
-
-//Optional: If you're using a private repository, specify the access token like this:
-//$myUpdateChecker->setAuthentication('your-token-here');
-
-//end plugin update check
-
 
 // Add admin menu under Settings
 add_action('admin_menu', 'wpproatoz_gf_bulk_delete_menu');
@@ -127,19 +121,26 @@ function wpproatoz_gf_dry_run_field() {
 // Enqueue admin scripts and styles
 add_action('admin_enqueue_scripts', 'wpproatoz_gf_bulk_delete_enqueue_scripts');
 function wpproatoz_gf_bulk_delete_enqueue_scripts($hook) {
+    wpproatoz_gf_log("Enqueue hook called with: $hook");
+    
     if ($hook !== 'settings_page_wpproatoz-gf-bulk-delete') {
         return;
     }
-    wp_enqueue_script('wpproatoz-gf-bulk-delete-js', plugin_dir_url(__FILE__) . 'bulk-delete.js', array(), '1.2', true);
-    wp_localize_script('wpproatoz-gf-bulk-delete-js', 'wpproatoz_gf_ajax', array(
+
+    $script_handle = 'wpproatoz-gf-bulk-delete-js';
+    wp_enqueue_script($script_handle, plugin_dir_url(__FILE__) . 'bulk-delete.js', array('jquery'), '1.3', true);
+    
+    $ajax_data = array(
         'ajax_url' => admin_url('admin-ajax.php'),
         'nonce' => wp_create_nonce('wpproatoz_gf_bulk_delete_nonce'),
         'pause_time' => isset(get_option('wpproatoz_gf_bulk_delete_options')['pause_time']) ? floatval(get_option('wpproatoz_gf_bulk_delete_options')['pause_time']) * 1000 : 15000,
         'form_id' => isset(get_option('wpproatoz_gf_bulk_delete_options')['form_id']) ? absint(get_option('wpproatoz_gf_bulk_delete_options')['form_id']) : 0,
         'form_title' => ($form_id = absint(get_option('wpproatoz_gf_bulk_delete_options')['form_id'])) ? GFAPI::get_form($form_id)['title'] : ''
-        // Removed 'dry_run' from here to fetch dynamically via AJAX
-    ));
-    wp_enqueue_style('wpproatoz-gf-bulk-delete-css', plugin_dir_url(__FILE__) . 'bulk-delete.css', array(), '1.2');
+    );
+    wp_localize_script($script_handle, 'wpproatoz_gf_ajax', $ajax_data);
+    
+    wp_enqueue_style('wpproatoz-gf-bulk-delete-css', plugin_dir_url(__FILE__) . 'bulk-delete.css', array(), '1.3');
+    wpproatoz_gf_log("Enqueued scripts and styles for GF Bulk Delete page with handle: $script_handle");
 }
 
 // Admin page with tabs
@@ -234,8 +235,16 @@ function wpproatoz_gf_bulk_delete_process() {
         wp_send_json_error(array('message' => 'No form selected.'));
     }
 
+    @set_time_limit(300);
+    ignore_user_abort(true);
+
     $transient_key = 'wpproatoz_gf_bulk_delete_progress_' . $form_id;
-    $progress = get_transient($transient_key) ?: array('total_deleted' => 0, 'total_entries' => 0);
+    $progress = get_transient($transient_key) ?: array('total_deleted' => 0, 'total_entries' => 0, 'last_offset' => 0);
+
+    if ($offset == 0) {
+        delete_option('wpproatoz_gf_bulk_delete_stop');
+        wpproatoz_gf_log("Fresh start: Cleared stop flag for Form ID $form_id");
+    }
 
     if ($progress['total_entries'] == 0) {
         $search_criteria_total = array();
@@ -243,7 +252,8 @@ function wpproatoz_gf_bulk_delete_process() {
             $search_criteria_total['status'] = $entry_status;
         }
         $progress['total_entries'] = GFAPI::count_entries($form_id, $search_criteria_total);
-        set_transient($transient_key, $progress, HOUR_IN_SECONDS);
+        $progress['last_offset'] = 0;
+        set_transient($transient_key, $progress, 2 * HOUR_IN_SECONDS);
         wpproatoz_gf_log("Started " . ($dry_run ? "dry run" : "deletion") . " for Form ID $form_id with {$progress['total_entries']} entries");
     }
 
@@ -258,23 +268,27 @@ function wpproatoz_gf_bulk_delete_process() {
     if ($entry_count > 0) {
         if (!$dry_run) {
             foreach ($entries as $entry) {
-                GFAPI::delete_entry($entry['id']);
+                $result = GFAPI::delete_entry($entry['id']);
+                if (is_wp_error($result)) {
+                    wpproatoz_gf_log("Failed to delete entry ID {$entry['id']}: " . $result->get_error_message());
+                }
             }
             wpproatoz_gf_log("Deleted $entry_count entries from Form ID $form_id at offset $offset");
         } else {
             wpproatoz_gf_log("Dry Run: Would have deleted $entry_count entries from Form ID $form_id at offset $offset");
         }
         $progress['total_deleted'] += $entry_count;
-        set_transient($transient_key, $progress, HOUR_IN_SECONDS);
+        $progress['last_offset'] = $offset + $entry_count;
+        set_transient($transient_key, $progress, 2 * HOUR_IN_SECONDS);
     }
 
     $remaining = max(0, $progress['total_entries'] - $progress['total_deleted']);
     $percentage = $progress['total_entries'] > 0 ? round(($progress['total_deleted'] / $progress['total_entries']) * 100, 2) : 0;
     $is_stopped = get_option('wpproatoz_gf_bulk_delete_stop') == '1';
-    $has_more = $entry_count > 0 && !$is_stopped;
+    $has_more = $entry_count == $batch_size && !$is_stopped && $remaining > 0;
 
-    if (!$has_more) {
-        wpproatoz_gf_log("Completed " . ($dry_run ? "dry run" : "deletion") . " for Form ID $form_id. Total deleted: {$progress['total_deleted']}");
+    if (!$has_more || $is_stopped) {
+        wpproatoz_gf_log("Completed " . ($dry_run ? "dry run" : "deletion") . " for Form ID $form_id. Total deleted: {$progress['total_deleted']}" . ($is_stopped ? " (stopped by user)" : ""));
         delete_transient($transient_key);
     }
 
@@ -286,7 +300,8 @@ function wpproatoz_gf_bulk_delete_process() {
         'offset' => $offset + $entry_count,
         'has_more' => $has_more,
         'is_stopped' => $is_stopped,
-        'dry_run' => $dry_run
+        'dry_run' => $dry_run,
+        'debug' => array('entry_count' => $entry_count, 'batch_size' => $batch_size)
     ));
 }
 
@@ -302,7 +317,8 @@ function wpproatoz_gf_reset_settings() {
         'dry_run' => 0
     );
     update_option('wpproatoz_gf_bulk_delete_options', $defaults);
-    wp_send_json_success();
+    wpproatoz_gf_log("Settings reset to defaults via AJAX");
+    wp_send_json_success(array('message' => 'Settings reset successfully'));
 }
 
 // AJAX handler for entry count preview
@@ -323,10 +339,11 @@ function wpproatoz_gf_get_entry_count() {
     }
 
     $count = GFAPI::count_entries($form_id, $search_criteria);
+    wpproatoz_gf_log("Fetched entry count for Form ID $form_id: $count");
     wp_send_json_success(array('count' => $count));
 }
 
-// AJAX handler for fetching current settings (new)
+// AJAX handler for fetching current settings
 add_action('wp_ajax_wpproatoz_gf_get_settings', 'wpproatoz_gf_get_settings');
 function wpproatoz_gf_get_settings() {
     check_ajax_referer('wpproatoz_gf_bulk_delete_nonce', 'nonce');

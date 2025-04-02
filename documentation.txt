@@ -1,15 +1,15 @@
 Gravity Forms WPProAtoZ Bulk Delete Plugin - User Documentation
 =============================================================
 
-Version: 1.1
-Date: April 01, 2025
+Version: 1.3
+Date: April 02, 2025
 Author: WPProAtoZ.com
 Website: https://wpproatoz.com
 GitHub: https://github.com/Ahkonsu/wpproatoz-bulkdelete-gf-entries
 
 Overview
 --------
-This plugin allows WordPress administrators to bulk delete entries from a specific Gravity Forms form. It’s designed to handle large volumes of entries (e.g., spam cleanup) with customizable settings, real-time progress tracking, and the ability to stop the process mid-run.
+This plugin allows WordPress administrators to bulk delete entries from a specific Gravity Forms form. It’s designed to handle large volumes of entries (e.g., spam cleanup) with customizable settings, real-time progress tracking, a stop option, dry run simulation, and detailed logging. The tool ensures reliable performance even with thousands of entries.
 
 Requirements
 ------------
@@ -32,37 +32,51 @@ How to Use
    - Navigate to **Settings > GF Bulk Delete**.
 
 2. **Configure Settings**
-   - **Select Form**: Choose the Gravity Form you want to delete entries from using the dropdown menu. The form title and ID are displayed for clarity.
-   - **Batch Size**: Set the number of entries to delete per batch (default: 1000). Lower this for slower servers to avoid timeouts.
-   - **Pause Time (seconds)**: Define the pause between batches in seconds (default: 1). Increase this if your server struggles with load.
+   - **Select Form**: Choose the Gravity Form to delete entries from using the dropdown menu. The form title and ID are displayed for clarity.
+   - **Batch Size**: Set the number of entries to process per batch (default: 250). Lower this for slower servers to avoid timeouts.
+   - **Pause Time (seconds)**: Define the pause between batches in seconds (default: 15). Increase this if your server experiences high load or timeouts.
    - **Entry Status to Delete**: Check the boxes for Active, Spam, and/or Trash entries to include them in the deletion. At least one must be selected.
+   - **Dry Run Mode**: Enable this (checkbox) to simulate the deletion without removing entries, useful for testing settings.
    - Click **Save Settings** to store your preferences.
 
-3. **Run the Bulk Delete**
-   - Below the settings form, click **Run Bulk Delete Now**.
-   - A confirmation prompt will appear: "Are you sure you want to delete entries? This cannot be undone." Click OK to proceed.
-   - The process starts, showing "Starting bulk delete..." followed by real-time updates like "Deleted: 1000 / 5000 (20%) - Remaining: 4000".
-   - A green progress bar fills as entries are deleted.
+3. **Preview Entry Count**
+   - After selecting a form, the "Total Entries to Delete" will display below the settings, showing how many entries match your chosen statuses.
 
-4. **Monitor Progress**
-   - Watch the progress text and bar to see how many entries have been deleted, the total count, percentage complete, and entries remaining.
+4. **Run the Bulk Delete**
+   - Below the settings, click **Run Bulk Delete Now**.
+   - A confirmation prompt will appear: "Are you sure you want to [delete entries/simulate deletion for] "[Form Title]"? This cannot be undone (Dry Run mode is [enabled/disabled])." Click OK to proceed.
+   - The process starts, showing "Starting bulk delete..." followed by real-time updates like "Deleted: 250 / 5000 (5%) - Remaining: 4750" (or "Would Delete" in dry run mode).
+   - A green progress bar fills as entries are processed.
+
+5. **Monitor Progress**
+   - Watch the progress text and bar for updates on deleted entries, total count, percentage complete, and entries remaining.
    - The process runs in batches, pausing between each based on your settings.
+   - A spinning loader indicates the process is active.
 
-5. **Stop the Process (Optional)**
+6. **Stop the Process (Optional)**
    - Once started, a **Stop Bulk Delete** button appears.
-   - Click it to halt the process after the current batch finishes. You’ll see "Stopping after current batch..." followed by "Stopped by user" when it ends.
+   - Click it and confirm to halt after the current batch. You’ll see "Stopping after current batch..." then "Stopped by user" when it ends.
 
-6. **Completion**
-   - When finished, you’ll see "Bulk delete completed!" and the UI resets, allowing you to start again if needed.
+7. **Reset Settings (Optional)**
+   - Click **Reset to Defaults** to revert all settings to their defaults (e.g., batch size 250, pause time 15, active status only).
+   - Confirm the action, and the page will reload with default settings applied.
+
+8. **View Logs**
+   - Switch to the "Logs" tab to see a detailed history of actions, including start/stop times, deleted entries, and any errors.
+
+9. **Completion**
+   - When finished, you’ll see "Bulk [delete/simulation] completed!" and the UI resets, allowing you to start again if needed.
 
 Troubleshooting
 ---------------
-- **Nothing Happens on Start**: Check your browser console (F12 > Console) for errors. Ensure Gravity Forms is active and settings are saved.
-- **Slow Performance**: Reduce the batch size or increase the pause time in settings.
+- **Nothing Happens on Start/Reset**: Check your browser console (F12 > Console) for errors like "wpproatoz_gf_ajax is not defined." Clear cache and ensure scripts load (see logs).
+- **Slow Performance or Timeouts**: Reduce batch size (e.g., 100) or increase pause time (e.g., 30 seconds) in settings.
+- **Premature Stop**: If it stops immediately with "Stopped by user," ensure no residual stop flag exists (cleared on fresh runs).
 - **Errors**: Common messages include:
   - "Gravity Forms not active": Install/activate Gravity Forms.
   - "No form selected": Choose a form in the settings.
-  - "AJAX Error": Check server logs or contact your host if network issues persist.
+  - "AJAX Error": Check server logs or contact your host if network issues persist. Look for retry messages in the UI (e.g., "Retrying 1/3").
+- **Logs Missing**: Ensure the plugin directory is writable for `bulk-delete-log.txt`.
 
 Support
 -------
@@ -73,6 +87,7 @@ Notes
 -----
 - Always back up your database before running bulk deletes.
 - This plugin only affects the selected form’s entries, leaving other forms untouched.
-- Deletion is permanent—there’s no undo option.
+- Deletion is permanent unless in Dry Run mode—there’s no undo option.
+- Logs are stored in `bulk-delete-log.txt` in the plugin directory for auditing.
 
 Thank you for using Gravity Forms WPProAtoZ Bulk Delete!

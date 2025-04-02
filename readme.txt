@@ -1,10 +1,32 @@
+  ___  _     _                         
+ / _ \| |   | |                        
+/ /_\ \ |__ | | _____  _ __  ___ _   _ 
+|  _  | '_ \| |/ / _ \| '_ \/ __| | | |
+| | | | | | |   < (_) | | | \__ \ |_| |
+\_| |_/_| |_|_|\_\___/|_| |_|___/\__,_|
+                                       
+                                      
+        
+        
+        \||/
+                |  @___oo
+      /\  /\   / (__,,,,|
+     ) /^\) ^\/ _)
+     )   /^\/   _)
+     )   _ /  / _)
+ /\  )/\/ ||  | )_)
+<  >      |(,,) )__)
+ ||      /    \)___)\
+ | \____(      )___) )___
+  \______(_______;;; __;;;
+
 === Gravity Forms WPProAtoZ Bulk Delete for Individual Gravity Forms ===
 Contributors: wpproatoz
 Tags: gravity forms, bulk delete, spam cleanup, form entries, wordpress plugin
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 8.0
-Stable tag: 1.2.1
+Stable tag: 1.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Requires Plugins: gravityforms
@@ -62,33 +84,11 @@ The plugin processes entries in batches with a configurable pause time between b
 2. The bulk delete process in action with progress bar and stop button.
 
 == Changelog ==
-= 1.2.1 =
-Minor bug fix
-
-= 1.2 =
-* Added logging functionality to track deletion activities.
-* Introduced Dry Run mode to simulate deletions.
-* Enhanced visual feedback with a loading spinner and stop confirmation.
-* Added a Reset Settings button to revert to defaults.
-* Included an entry count preview before starting the process.
-* Released: April 01, 2025
-
-= 1.1 =
-* Added AJAX-based deletion with real-time progress bar and stop functionality.
-* Improved performance for large entry sets.
-* Released: April 01, 2025
-
-= 1.0 =
-* Initial release with basic bulk delete functionality.
-* Released: March 2025
-
-== Upgrade Notice ==
-
-= 1.2 =
-This update adds logging, dry run mode, improved visuals, a reset button, and entry count preview for better control and usability. Highly recommended for all users.
-
-= 1.1 =
-This update introduces AJAX processing, a progress bar, and a stop feature for better control and performance. Update recommended for all users.
-
-== Support ==
-For support, visit [WPProAtoZ.com](https://wpproatoz.com) or raise an issue on [GitHub](https://github.com/Ahkonsu/wpproatoz-bulkdelete-gf-entries).
+= 1.3 =
+* Fixed incomplete deletions on large datasets by improving batch processing logic and adding AJAX retries (up to 3 attempts).
+* Increased PHP execution time per batch to 5 minutes and added `ignore_user_abort` for reliability.
+* Enhanced logging for failed deletions and script enqueue debugging.
+* Resolved premature stop on fresh runs by ensuring stop flag is cleared client-side and server-side.
+* Fixed `wpproatoz_gf_ajax is not defined` error with delayed JavaScript initialization.
+* Restored and stabilized "Reset to Defaults" functionality with improved AJAX handling.
+* Released: April 02
