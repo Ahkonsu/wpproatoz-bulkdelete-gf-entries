@@ -91,4 +91,46 @@ The plugin processes entries in batches with a configurable pause time between b
 * Resolved premature stop on fresh runs by ensuring stop flag is cleared client-side and server-side.
 * Fixed `wpproatoz_gf_ajax is not defined` error with delayed JavaScript initialization.
 * Restored and stabilized "Reset to Defaults" functionality with improved AJAX handling.
-* Released: April 02
+* Released: April 02, 2025
+
+= 1.2.2 =
+* Fixed syntax error in debug array causing parse error.
+* Released: April 02, 2025
+
+= 1.2.1 =
+* Minor bug fix
+* Released: April 01, 2025
+
+= 1.2 =
+* Added logging functionality to track deletion activities.
+* Introduced Dry Run mode to simulate deletions.
+* Enhanced visual feedback with a loading spinner and stop confirmation.
+* Added a Reset Settings button to revert to defaults.
+* Included an entry count preview before starting the process.
+* Released: April 01, 2025
+
+= 1.1 =
+* Added AJAX-based deletion with real-time progress bar and stop functionality.
+* Improved performance for large entry sets.
+* Released: April 01, 2025
+
+= 1.0 =
+* Initial release with basic bulk delete functionality.
+* Released: March 2025
+
+== Upgrade Notice ==
+
+= 1.3 =
+Major update fixing large deletion issues, premature stops, and JavaScript errors. Ensures reliable resets and improved server performance. Highly recommended for all users.
+
+= 1.2.2 =
+Fixes a syntax error that prevented plugin activation. Update immediately if affected.
+
+= 1.2 =
+This update adds logging, dry run mode, improved visuals, a reset button, and entry count preview for better control and usability. Highly recommended for all users.
+
+= 1.1 =
+This update introduces AJAX processing, a progress bar, and a stop feature for better control and performance. Update recommended for all users.
+
+== Support ==
+For support, visit [WPProAtoZ.com](https://wpproatoz.com) or raise an issue on [GitHub](https://github.com/Ahkonsu/wpproatoz-bulkdelete-gf-entries).
